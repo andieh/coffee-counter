@@ -1,10 +1,23 @@
 from coffee import coffee, engine, session
 from coffee.models import User, Event
-from flask import request
+from flask import request, send_file
 import datetime, time
 from sqlalchemy import func, desc
+import drawing
 
 EVENT_TYPES = [None, "coffee", "pack", "clean"]
+ADMIN = False
+@coffee.route("/get-number", methods=["GET"])
+def image():
+
+    if not "nr" in request.args:
+        # todo 
+        return None
+
+    Num = drawing.Numbers(30)
+    img = Num.cache_number(request.args.get("nr"), drawing.CACHE_FOLDER)
+
+    return send_file(img, mimetype='image/jpeg')
 
 @coffee.route("/", methods=["POST", "GET"])
 @coffee.route("/index")
@@ -73,8 +86,9 @@ def index():
     ret += "<hr>"
 
     # statistics 
-    ret += "Stats:<hr><table>"
-    ret += "<tr><td>name</td><td>cleanings</td><td>bags</td><td>coffees</td></tr>"
+
+    ret += "Stats:<hr><table border='1'>"
+    ret += "<tr><td>name</td><td>cleanings</td><td>bags</td><td>Sum</td><td>coffees</td><td></td></tr>"
     for (event, c_cnt) in coffees:
         username = event.User.username
         uid = event.user_id
@@ -84,20 +98,24 @@ def index():
         sb_cnt = b_cnt - rb_cnt # whats his dept?
         u_cleans = filter(lambda x: x[0].User.id == uid, cleans)
         cl_cnt = u_cleans[0][1] if len(u_cleans) else 0
+    
         ret += "<tr><td>{}</td>".format(username)
         ret += "<td>{}</td>".format(cl_cnt)
         ret += "<td>{}</td>".format(b_cnt)
         ret += "<td>{:0.2f}</td>".format(sb_cnt)
         ret += "<td>{}</td>".format(c_cnt)
-        ret += "<td><form action='?' method='post'>add "
-        ret += "<input type='hidden' name='uid' value='{}'>".format(uid)
-        ret += "<input type='text' name='amount' value='0'>"
-        ret += "<input type='submit' name='update' value='coffee'>"
-        ret += "<input type='submit' name='update' value='clean'>"
-        ret += "<input type='submit' name='update' value='pack'>"
-        ret += "</form></td>"
-
+        ret += "<td><img src='get-number?nr={}'></td>".format(c_cnt)
         ret += "</tr>"
+        if ADMIN:
+            ret += "<tr><td></td><td colspan='4'><form action='?' method='post'>add "
+            ret += "<input type='hidden' name='uid' value='{}'>".format(uid)
+            ret += "<input type='text' name='amount' value='0'>"
+            ret += "<input type='submit' name='update' value='coffee'>"
+            ret += "<input type='submit' name='update' value='clean'>"
+            ret += "<input type='submit' name='update' value='pack'>"
+            ret += "</form></td>"
+            ret += "</tr>"
+
     ret += "</table><hr>"
     ret += "</body></html>"
     return ret
