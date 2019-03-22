@@ -1,4 +1,4 @@
-from coffee import coffee, engine, session
+from coffee import coffee, engine, session, Config
 from coffee.models import User, Event
 from flask import request, send_file
 import datetime, time
@@ -6,7 +6,7 @@ from sqlalchemy import func, desc
 import drawing
 
 EVENT_TYPES = [None, "coffee", "pack", "clean"]
-ADMIN = False
+ADMIN = True
 @coffee.route("/get-number", methods=["GET"])
 def image():
 
@@ -15,7 +15,8 @@ def image():
         return None
 
     Num = drawing.Numbers(30)
-    img = Num.cache_number(request.args.get("nr"), drawing.CACHE_FOLDER)
+    print dir(Config)
+    img = Num.cache_number(request.args.get("nr"), Config.CACHE_FOLDER)
 
     return send_file(img, mimetype='image/jpeg')
 
@@ -35,8 +36,6 @@ def index():
 
         # randomly add some data for historical purposes
         if "update" in request.form:
-            print request.form["update"]
-
             if request.form["update"] not in EVENT_TYPES:
                 ret += "unknown event type"
             else:
@@ -81,7 +80,7 @@ def index():
     pcks = sum([x[1] for x in bags])
     ret += "{} coffees brewed in hostory<br>".format(cffs)
     ret += "{} packs of beans used<br>".format(pcks)
-    ppc = pcks / float(cffs)
+    ppc = pcks / float(cffs) if cffs else 1
     ret += "leads to {} packs per coffee!".format(ppc)
     ret += "<hr>"
 
@@ -128,7 +127,6 @@ def new_coffee():
 
     # sanity checks
     uid = request.args.get("who")
-    print len(uid)
     try:
         what = int(request.args.get("what"))
     except:
