@@ -6,16 +6,14 @@ from sqlalchemy import func, desc
 import drawing
 
 EVENT_TYPES = [None, "coffee", "pack", "clean"]
-ADMIN = True
+
 @coffee.route("/get-number", methods=["GET"])
 def image():
-
     if not "nr" in request.args:
         # todo 
         return None
 
     Num = drawing.Numbers(30)
-    print dir(Config)
     img = Num.cache_number(request.args.get("nr"), Config.CACHE_FOLDER)
 
     return send_file(img, mimetype='image/jpeg')
@@ -72,14 +70,29 @@ def index():
 
 
     # prices
+    # calculation is based on two things:
+    # for the prices, take all coffees and bags used / buyed until the current month
+    # to avoid changing prices after each coffee.
+    current_date = datetime.datetime.fromtimestamp(time.time())
+    line = time.mktime((current_date.year, current_date.month, 1, 0, 0, 1, 0, 0, 0))
+    print line, time.time()
     ret += "Calculations:<hr>"
-    coffees = session.query(Event, func.count(Event.what).label("count")).filter(Event.what.is_(1)).group_by(Event.user_id).all()
+    # all coffees
+    coffees_all = session.query(Event, func.count(Event.what).label("count")).filter(Event.what.is_(1))
+    coffees = coffees_all.filter(Event.timestamp < line).group_by(Event.user_id).all()
+    print coffees
+
     bags = session.query(Event, func.count(Event.what).label("count")).filter(Event.what.is_(2)).group_by(Event.user_id).all()
     cleans = session.query(Event, func.count(Event.what).label("count")).filter(Event.what.is_(3)).group_by(Event.user_id).all()
     cffs = sum([x[1] for x in coffees])
     pcks = sum([x[1] for x in bags])
+    clns = sum([x[1] for x in cleans])
+
     ret += "{} coffees brewed in hostory<br>".format(cffs)
     ret += "{} packs of beans used<br>".format(pcks)
+    ret += "{} cleanings performed<br>".format(clns)
+
+    # calculate "price" per coffee
     ppc = pcks / float(cffs) if cffs else 1
     ret += "leads to {} packs per coffee!".format(ppc)
     ret += "<hr>"
@@ -105,7 +118,7 @@ def index():
         ret += "<td>{}</td>".format(c_cnt)
         ret += "<td><img src='get-number?nr={}'></td>".format(c_cnt)
         ret += "</tr>"
-        if ADMIN:
+        if Config.ADMIN:
             ret += "<tr><td></td><td colspan='4'><form action='?' method='post'>add "
             ret += "<input type='hidden' name='uid' value='{}'>".format(uid)
             ret += "<input type='text' name='amount' value='0'>"
@@ -142,7 +155,8 @@ def new_coffee():
         session.add(u)
 		
     # new coffee event
-    e = Event(what=what, user_id=uid)
+    t = time.time()
+    e = Event(what=what, timestamp=t, user_id=uid)
     session.add(e)
 
     # commit db

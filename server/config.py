@@ -6,6 +6,9 @@ class Config(object):
 	SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'app.db')
 	SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+	# Admin mode to add more functionality.
+	ADMIN = True
+
 	# Plot Configuration
 	# folder for cached number plots
 	#CACHE_FOLDER = "/home/andieh/src/coffee-counter/server/tmp/"
@@ -14,4 +17,3 @@ class Config(object):
 	# this looks more "natural"
 	RANDOMNESS = True
 
-	
