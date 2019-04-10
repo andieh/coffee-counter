@@ -1,32 +1,37 @@
 import cv2
 import numpy as np
 import os
-
-CACHE_FOLDER = "/home/andieh/src/coffee-counter/server/tmp/"
+from random import randint
+from config import Config
 
 class Numbers:
     def __init__(self, height=60, pos=(0,0)):
         self.pos = pos
         self.height = height
 
+    def _random(self):
+        if not Config.RANDOMNESS:
+            return 0
+        return randint(-2,2)
+
     def draw(self, number):
-        if number <= 0:
+        if number < 0:
             return None
 
         step = int(self.height / 5)
-        exp_w = (int(number / 5)+1)*step*5
+        exp_w = max((int(number / 5)+1)*step*5, 1)
         img = np.ones((self.height, exp_w, 1), np.uint8)*255
 
         for i in range(1, number+1):
             init = self.pos
             if i % 5 == 0:
-                x_start = init[0] + ((i-5)*step )
-                x_end = init[0] + (i*step)
+                x_start = init[0] + ((i-5)*step) + self._random()
+                x_end = init[0] + (i*step) + self._random()
             else:
-                x_start = init[0] + (i*step)
-                x_end = x_start
+                x_start = init[0] + (i*step) + self._random()
+                x_end = x_start + self._random()
             
-            cv2.line(img, (x_start, init[1]), (x_end, init[1] + self.height), 0, 2)
+            cv2.line(img, (x_start, init[1] + self._random()), (x_end, init[1] + self.height + self._random()), randint(0,50), 2)
 
         return img
 

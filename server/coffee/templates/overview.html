@@ -1,0 +1,60 @@
+<!doctype html>
+<meta http-equiv="refresh" content="5; URL=/show">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+#overlay {
+  position: fixed;
+  display: none;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255,0,0,0.8);
+  z-index: 2;
+  cursor: pointer;
+  text-align:center;
+  font-size: 40px;
+  font-style: bold;
+}
+</style>
+</head>
+
+{% if message %}
+<body onload="on()">
+<div id="overlay"><h3>!!GO ON {{ message["username"].upper() }}!!</h3><br><h2>!!! {{ message["what"].upper() }}!!!</h2></div>
+{% else %}
+<body>
+{% endif %}
+<script>
+function on() {
+  document.getElementById("overlay").style.display = "block";
+  setTimeout(function() { document.getElementById("overlay").style.display = "none"; }, 1000);
+}
+</script>
+
+<title>The Great Coffee Consumption</title>
+
+<div id="overlay"></div>
+
+<table border="1">
+	<tr>
+		<td>Name</td>
+		<td>Cleans</td>
+		<td>Packs</td>
+		<td>Balance</td>
+		<td>Coffees</td>
+		<td>Usage</td>
+	</tr>
+{% for uid in users.keys() %}
+  	<tr>
+		<td>{{ users[uid]["username"] }}</td>
+		<td>{{ users[uid]["cleans"] }}</td>
+		<td>{{ users[uid]["packs"] }}</td>
+		<td>{{ "{:0.2f}".format(users[uid]["balance"]) }}</td>
+		<td>{{ users[uid]["coffee_total"] }}</td>
+		<td><img src="get-number?nr={{ users[uid]["coffee"] }}&foo={{ random }}"></td>
+  	</tr>
+{% endfor %}
+<table>
