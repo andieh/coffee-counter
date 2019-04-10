@@ -47,8 +47,8 @@ class Numbers:
             return None
         fn = os.path.join(fnp, "num-{:04d}.jpg".format(num))
         
-        #if os.path.exists(fn):
-        #    return fn 
+        if os.path.exists(fn):
+            return fn 
 
         img = self.draw(num)
         cv2.imwrite(fn, img)
