@@ -7,6 +7,7 @@ import drawing
 import os
 import random
 
+<<<<<<< HEAD
 def calculate_coffee_price():
     # prices
     # calculation is based on two things:
@@ -26,6 +27,10 @@ def calculate_coffee_price():
 
     return ppc
     
+=======
+EVENT_TYPES = [None, "coffee", "pack", "clean"]
+
+>>>>>>> 8d5e989e942b5cf838fd2dd0b51cb702e0f4b6ee
 @coffee.route("/get-number", methods=["GET"])
 def image():
     if not "nr" in request.args:
@@ -53,7 +58,11 @@ def index():
 
         # randomly add some data for historical purposes
         if "update" in request.form:
+<<<<<<< HEAD
             if request.form["update"] not in Config.EVENT_TYPES:
+=======
+            if request.form["update"] not in EVENT_TYPES:
+>>>>>>> 8d5e989e942b5cf838fd2dd0b51cb702e0f4b6ee
                 ret += "unknown event type"
             else:
                 amount = int(request.form["amount"])
@@ -94,6 +103,7 @@ def index():
     # to avoid changing prices after each coffee.
     current_date = datetime.datetime.fromtimestamp(time.time())
     line = time.mktime((current_date.year, current_date.month, 1, 0, 0, 1, 0, 0, 0))
+<<<<<<< HEAD
     
     ret += "Calculations:<hr>"
     # all coffees
@@ -111,6 +121,22 @@ def index():
     clns = sum([x[1] for x in cleans])
 
     ret += "{} coffees brewed in history<br>".format(cffs)
+=======
+    print line, time.time()
+    ret += "Calculations:<hr>"
+    # all coffees
+    coffees_all = session.query(Event, func.count(Event.what).label("count")).filter(Event.what.is_(1))
+    coffees = coffees_all.filter(Event.timestamp < line).group_by(Event.user_id).all()
+    print coffees
+
+    bags = session.query(Event, func.count(Event.what).label("count")).filter(Event.what.is_(2)).group_by(Event.user_id).all()
+    cleans = session.query(Event, func.count(Event.what).label("count")).filter(Event.what.is_(3)).group_by(Event.user_id).all()
+    cffs = sum([x[1] for x in coffees])
+    pcks = sum([x[1] for x in bags])
+    clns = sum([x[1] for x in cleans])
+
+    ret += "{} coffees brewed in hostory<br>".format(cffs)
+>>>>>>> 8d5e989e942b5cf838fd2dd0b51cb702e0f4b6ee
     ret += "{} packs of beans used<br>".format(pcks)
     ret += "{} cleanings performed<br>".format(clns)
 
